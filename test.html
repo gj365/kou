@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Supabase 连接测试</title>
+</head>
+<body>
+
+<h2>Supabase 数据库连接测试</h2>
+
+<button id="btn">点我测试数据库</button>
+<pre id="log">（等待点击）</pre>
+
+<!-- ① 只加载一次 SDK -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+  const log = document.getElementById("log");
+  const btn = document.getElementById("btn");
+
+  const SUPABASE_URL = "https://iodijnhbxihastuknqky.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGlqbmhieGloYXN0dWtucWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NjgyNTIsImV4cCI6MjA4NTQ0NDI1Mn0.PTG1s0Zv14VX-yfrZNmJqyu-R7wlvJl3_YYcq40g6Y4";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  btn.onclick = async () => {
+    log.textContent = "⏳ 正在访问 Supabase…";
+
+    const { data, error } = await supabaseClient
+      .from("enrollments")
+      .select("*")
+      .limit(1);
+
+    if (error) {
+      log.textContent = "❌ Supabase 错误：\n" + error.message;
+    } else {
+      log.textContent =
+        "✅ 数据库访问成功：\n" +
+        JSON.stringify(data, null, 2);
+    }
+  };
+</script>
+
+
+
+</body>
+</html>
+
+
+
+

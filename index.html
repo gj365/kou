@@ -1,15 +1,140 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="zh">
 
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="assets/css/app.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>UEC日本語PTシステム</title>
-  
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+      color: #333;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 25px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #444;
+      margin-bottom: 25px;
+      font-size: 24px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background-color: #fff;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    th {
+      background-color: #f4f4f4;
+      color: #444;
+    }
+
+    td.slot {
+      cursor: pointer;
+      background-color: #e8f5e9;
+      transition: background-color 0.2s ease;
+      font-weight: bold;
+    }
+
+    td.slot:hover {
+      background-color: #b2ebf2;
+    }
+
+    td.slot1 {
+      background-color: #e8f5e9;
+      font-weight: bold;
+    }
+
+    td.full {
+      background-color: #fffacd;
+      color: #888;
+      cursor: not-allowed;
+      font-weight: bold;
+    }
+
+    td.break {
+      background-color: #add8e6;
+      color: #888;
+      pointer-events: none;
+      font-weight: bold;
+    }
+
+    .buttons {
+      margin-top: 30px;
+      display: flex;
+      gap: 20px;
+    }
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s ease;
+}
+
+    .btn.primary {
+      background: #add8e6;
+      color: black;
+    }
+
+    .btn.primary:hover {
+      background: #45a049;
+    }
+
+.btn.cancel {
+  background: #ffb6c1;
+  color: black;
+  margin-left: auto;
+}
+
+    .btn.cancel:hover {
+      background: #d32f2f;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      margin-top: 30px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    @media (max-width: 768px) {
+      .buttons {
+        flex-direction: column;
+      }
+    }
+
+  </style>
 </head>
 
-<body data-page="schedule">
+<body>
 
   <div class="container">
 
@@ -142,9 +267,118 @@
   <div id="footer-container"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script>
+	  fetch("footer.html")
+	    .then(res => res.text())
+	    .then(data => {
+	      document.getElementById("footer-container").innerHTML = data;
+	    });
+	</script>
+	<script>
+	  // 1.设置截止时间（本地时间）
+	  //const DEADLINE = new Date("2026-03-25T23:59:59");
+	  const DEADLINE = new Date("2026-09-23T23:59:59");
 
-  <script src="assets/js/common.js"></script>
-  <script src="assets/js/schedule.js"></script>
+	  // 2.页面加载时检查
+	  if (new Date() > DEADLINE) {
+		// 所有可预约格子禁用
+		document.querySelectorAll(".slot").forEach(cell => {
+		  cell.textContent = "受付終了";   // 显示已结束
+		  cell.style.pointerEvents = "none"; // 禁止点击
+		  cell.classList.add("full");       // 可加样式变灰
+		});
+
+		// 所有按钮禁用
+		//document.querySelectorAll(".btn").forEach(btn => {
+		//  btn.style.pointerEvents = "none";
+		//  btn.style.opacity = "0.5";
+		//});
+
+		// 顶部显示提示
+		const msg = document.createElement("div");
+		msg.textContent = "予約受付は終了しました";
+		msg.style.color = "red";
+		msg.style.fontWeight = "bold";
+		msg.style.textAlign = "center";
+		msg.style.marginBottom = "15px";
+		document.querySelector(".container").prepend(msg);
+	  }
+	</script>
+  <script>
+    const SUPABASE_URL = "https://iodijnhbxihastuknqky.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGlqbmhieGloYXN0dWtucWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NjgyNTIsImV4cCI6MjA4NTQ0NDI1Mn0.PTG1s0Zv14VX-yfrZNmJqyu-R7wlvJl3_YYcq40g6Y4";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let flag = false;
+
+    function goToEnrollPage(time, date) {
+      if (flag) {
+        const cell = document.querySelector(`td[data-time="${time}"][data-date="${date}"]`);
+        if (cell.textContent !== "×") {
+		  const capacity = cell.dataset.capacity;
+		  window.location.href = `input.html?time=${time}&date=${date}&capacity=${capacity}`;
+        } else {
+          alert("この時間帯は満員です。\nFully booked.");
+        }
+      }
+    }
+
+    function groupByTwoKeys(list, key1, key2) {
+      const groupMap = {};
+      list.forEach(item => {
+        const groupKey = `${item[key1]}_${item[key2]}`;
+        if (!groupMap[groupKey]) {
+          groupMap[groupKey] = { [key1]: item[key1], [key2]: item[key2], count: 1 };
+        } else {
+          groupMap[groupKey].count++;
+        }
+      });
+      return Object.values(groupMap);
+    }
+
+    function updateCourse(list) {
+      const slots = document.querySelectorAll(".slot");
+
+      for (let cell of slots) {
+        const time = cell.getAttribute("data-time");
+        const date = cell.getAttribute("data-date");
+		const capacity = parseInt(cell.dataset.capacity);
+
+        for (let item of list) {
+          if (item.time_slot == time && item.date == date) {
+            let remaining = capacity - item.count;
+            cell.textContent = remaining > 0 ? remaining + "人" : "×";
+
+            if (remaining <= 0) {
+              cell.classList.add("full");
+              cell.classList.remove("slot");
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    async function loadSchedule() {
+      const { data, error } = await supabaseClient
+        .from("enrollments")
+        .select("time_slot,date")
+        .order("date", { ascending: true })
+        .order("time_slot", { ascending: true });
+
+      if (error) {
+        console.error(error.message);
+        return;
+      }
+
+      const grouped = groupByTwoKeys(data, "time_slot", "date");
+      updateCourse(grouped);
+      flag = true;
+    }
+
+    loadSchedule();
+  </script>
+
 </body>
 
 </html>

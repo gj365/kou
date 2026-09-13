@@ -1,15 +1,111 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="zh">
 
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="assets/css/app.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Basic Information</title>
-  
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+    }
+
+    .container {
+      margin: 30px auto;
+      padding: 25px;
+      border: 1px solid #ddd;
+      max-width: 600px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #444;
+      margin-bottom: 25px;
+    }
+
+    .details p {
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      box-sizing: border-box;
+      margin-top: 15px;
+      transition: background 0.2s ease;
+    }
+
+    .btn.primary {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn.primary:hover {
+      background: #45a049;
+    }
+
+    .btn.cancel {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn.cancel:hover {
+      background: #d32f2f;
+    }
+
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .alert {
+      color: #d9534f;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      margin-top: 30px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 90%;
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 
-<body data-page="reservation">
+<body>
 
   <div class="container">
     <h2>基本情報 / Basic Information</h2>
@@ -56,10 +152,137 @@
   <div id="footer-container"></div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+  fetch("footer.html")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("footer-container").innerHTML = data;
+    });
+</script>
+  <script>
 
-  <script src="assets/js/common.js"></script>
-  <script src="assets/js/reservation.js"></script>
+    const SUPABASE_URL = "https://iodijnhbxihastuknqky.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvZGlqbmhieGloYXN0dWtucWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4NjgyNTIsImV4cCI6MjA4NTQ0NDI1Mn0.PTG1s0Zv14VX-yfrZNmJqyu-R7wlvJl3_YYcq40g6Y4";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const timeSlot = urlParams.get('time');
+    const date = urlParams.get('date');
+    const capacity = parseInt(urlParams.get('capacity'));
+
+    document.getElementById("time-slot").textContent = timeSlot;
+    document.getElementById("date").textContent = formatJapaneseDate(date);
+
+    document.getElementById("back").onclick = () => {
+      window.location.href = "index.html";
+    };
+
+    async function checkEnrollmentExistence() {
+      const { count, error } = await supabaseClient
+        .from("enrollments")
+        .select("*", { count: "exact" })
+        .eq("time_slot", timeSlot)
+        .eq("date", date);
+
+      if (error) {
+        console.error("查询失败:", error.message);
+        return false;
+      }
+
+      if (count >= capacity) {
+        document.getElementById("alert-message").textContent =
+          "この時間帯は満席です。ほかの時間を選択してください。\nFully booked.";
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 3000);
+        return false;
+      }
+
+      return true;
+    }
+
+document.getElementById("confirm").onclick = async () => {
+
+  const name = document.getElementById("name").value.trim();
+  const kana = document.getElementById("kana").value.trim();
+  const nationality = document.getElementById("nationality").value.trim();
+  const status = document.getElementById("status").value;
+//  const email = document.getElementById("email").value.trim();
+
+  // ===== 1. 必填检查 =====
+//  if (!name || !kana || !nationality || !status || !email) {
+  if (!name || !kana || !nationality || !status) {
+    alert("すべての項目を入力してください。\nPlease fill in all fields.");
+    return;
+  }
+
+  // ===== 2. 满员检查 =====
+  const canInsert = await checkEnrollmentExistence();
+  if (!canInsert) return;
+
+  // ===== 3. 生成确认信息 =====
+  const confirmMessage =
+    "以下の内容で予約します。\n\n" +
+    `日程/Date：${formatJapaneseDate(date)}\n` +
+    `時間/Time：${timeSlot}\n` +
+    `名前：${name}\n` +
+    `カタカナ：${kana}\n` +
+    `国籍・地域：${nationality}\n` +
+    `身分：${status}\n` +
+//    `メールアドレス：${email}\n\n` +
+    "よろしいですか？";
+
+  // ===== 4. 弹出确认窗口 =====
+  const userConfirmed = confirm(confirmMessage);
+  if (!userConfirmed) {
+    return; // 用户取消
+  }
+
+  // ===== 5. 真正写入数据库 =====
+  const { error } = await supabaseClient
+    .from("enrollments")
+    .insert([{
+      time_slot: timeSlot,
+      date: date,
+      name: name,
+      kana: kana,
+      nationality: nationality,
+      status: status
+//      ,
+//      email: email
+    }]);
+
+  if (error) {
+    alert("予約に失敗しました。再度お試しください。");
+    console.error(error);
+  } else {
+    alert("予約完了 / Reservation successful");
+    window.location.href = "index.html";
+  }
+};
+
+function formatJapaneseDate(dateStr) {
+  // dateStr 例如 "3/30"
+  const [month, day] = dateStr.split("/").map(Number);
+
+  // 2026年（可改成动态）
+  const year = 2026;
+
+  const dateObj = new Date(year, month - 1, day);
+
+  const weekdays = ["Sun.", "Mon.", "Tue.", "Wed.", "Thu.", "Fri.", "Sat."];
+  const weekday = weekdays[dateObj.getDay()];
+
+  return `${month}月${day}日(${weekday})`;
+}
+  </script>
+
 </body>
 
 </html>
+
+
+
+
 
