@@ -23,8 +23,8 @@ window.ReservationApp = (() => {
       statusOptions: ["J：JUSST プログラム学生", "RS：研究生", "D：博士後期課程学生", "M：博士前期課程学生", "S：配偶者"],
       confirm: "予約する",
       back: "戻る",
-      required: "すべての項目を入力してください。\nPlease fill in all fields.",
-      fullMessage: "この時間帯は満席です。ほかの時間を選択してください。\nFully booked.",
+      required: "すべての項目を入力してください。",
+      fullMessage: "この時間帯は満席です。ほかの時間を選択してください。",
       reservationPrompt: (data) => "以下の内容で予約します。\n\n日程：" + data.date + "\n時間：" + data.time + "\n氏名：" + data.name + "\nカタカナ：" + data.kana + "\n国籍・地域：" + data.nationality + "\n身分：" + data.status + "\n\nよろしいですか？",
       reservationFailed: "予約に失敗しました。もう一度お試しください。",
       reservationSucceeded: "予約が完了しました。",
@@ -40,9 +40,9 @@ window.ReservationApp = (() => {
       search: "検索",
       cancelHeaders: ["日程", "時間", "氏名（アルファベット）", "氏名（カタカナ）", "国籍・地域", "身分", "操作"],
       cancel: "キャンセル",
-      enterName: "予約時の氏名を入力してください。\nEnter your reservation name.",
-      noReservation: "予約記録が見つかりません。\nNo reservation found.",
-      cancelPrompt: (date, time) => date + " " + time + " の予約をキャンセルしますか？\nAre you sure you want to cancel your reservation?",
+      enterName: "予約時の氏名を入力してください。",
+      noReservation: "予約記録が見つかりません。",
+      cancelPrompt: (date, time) => date + " " + time + " の予約をキャンセルしますか？",
       cancelSucceeded: "予約をキャンセルしました。"
     },
     en: {
